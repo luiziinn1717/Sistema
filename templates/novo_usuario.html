@@ -1,0 +1,121 @@
+{% extends base_template %}
+
+{% block title %}Novo Usuário - Sistema{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="sys-card card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-user-plus me-2"></i>Novo Usuário</h4>
+            </div>
+            <div class="sys-card card-body">
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Nome de Usuário *</label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       value="{{ request.form.get('username', '') }}" required>
+                                <small class="form-text text-muted">Usado para fazer login no sistema</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="nome_completo" class="form-label">Nome Completo *</label>
+                                <input type="text" class="form-control" id="nome_completo" name="nome_completo" 
+                                       value="{{ request.form.get('nome_completo', '') }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ request.form.get('email', '') }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Senha *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmar_password" class="form-label">Confirmar Senha *</label>
+                                <input type="password" class="form-control" id="confirmar_password" name="confirmar_password" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="departamento" class="form-label">Departamento</label>
+                                <input type="text" class="form-control" id="departamento" name="departamento" 
+                                       value="{{ request.form.get('departamento', '') }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="telefone" class="form-label">Telefone</label>
+                                <input type="text" class="form-control" id="telefone" name="telefone" 
+                                       placeholder="(00) 00000-0000" value="{{ request.form.get('telefone', '') }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="role_id" class="form-label">Papel *</label>
+                                <select class="form-select" id="role_id" name="role_id" required>
+                                    <option value="">Selecione um papel</option>
+                                    {% for role in roles %}
+                                        <option value="{{ role.id }}" {% if request.form.get('role_id')|int == role.id %}selected{% endif %}>
+                                            {{ role.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-text text-muted">Define as permissões do usuário no sistema</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                        <a href="{{ url_for(request.blueprint + '.usuarios') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-user-plus me-2"></i>Criar Usuário
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmarPassword = document.getElementById('confirmar_password').value;
+
+    if (password !== confirmarPassword) {
+        e.preventDefault();
+        alert('As senhas não coincidem!');
+        document.getElementById('confirmar_password').focus();
+    }
+
+    const roleSelect = document.getElementById('role_id');
+    if (!roleSelect.value) {
+        e.preventDefault();
+        alert('Por favor, selecione um papel para o usuário.');
+        roleSelect.focus();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends "base_juridico.html" %}
+
+{% block title %}Processos Jurídicos - Sistema Jurídico{% endblock %}
+
+{% block content %}
+<!-- Alert de Sucesso -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} d-flex align-items-center alert-dismissible fade show" role="alert">
+                <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} me-2 fa-lg"></i>
+                <div class="fw-bold">{{ message }}</div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Cabeçalho -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="fas fa-gavel me-2"></i>Processo Jurídico
+    </h2>
+    <a href="{{ url_for('juridico_bp.new_proposta') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Novo Processo
+    </a>
+</div>
+
+<!-- Card de Filtros -->
+<div class="sys-card card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-filter me-2"></i>Filtros
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="per_page" value="{{ per_page }}">
+            
+            <div class="col-md-3">
+                <label for="status" class="form-label fw-semibold">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos os Status</option>
+                    {% for status in status_list %}
+                    <option value="{{ status }}" {% if request.args.get('status') == status %}selected{% endif %}>
+                        {{ status }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="operadora" class="form-label fw-semibold">Operadora</label>
+                <select class="form-select" id="operadora" name="operadora">
+                    <option value="">Todas as Operadoras</option>
+                    {% for operadora in operadoras %}
+                    <option value="{{ operadora }}" {% if request.args.get('operadora') == operadora %}selected{% endif %}>
+                        {{ operadora }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="tipo_de_demandas" class="form-label fw-semibold">Tipo de Demanda</label>
+                <select class="form-select" id="tipo_de_demandas" name="tipo_de_demandas">
+                    <option value="">Todas as Demandas</option>
+                    {% for tipo in tipo_de_demandas %}
+                    <option value="{{ tipo }}" {% if request.args.get('tipo_de_demandas') == tipo %}selected{% endif %}>
+                        {{ tipo }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="data_de_pagamento" class="form-label fw-semibold">Data de Pagamento</label>
+                <input type="date" class="form-control" id="data_de_pagamento" name="data_de_pagamento" 
+                       value="{{ request.args.get('data_de_pagamento', '') }}">
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-2"></i>Filtrar
+                </button>
+                <a href="{{ url_for('juridico_bp.propostas') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-eraser me-2"></i>Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Card da Lista de Propostas -->
+<div class="sys-card card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>Lista de Processos
+            </h5>
+            <small class="text-muted">
+                Mostrando {{ pagination.per_page * (pagination.page - 1) + 1 }} a 
+                {{ pagination.per_page * (pagination.page - 1) + propostas|length }} de 
+                {{ pagination.total }} registros
+            </small>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-2">Mostrar:</span>
+                <select id="per_page_select" class="form-select form-select-sm" onchange="changePerPage(this.value)" style="width: auto;">
+                    <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                </select>
+            </div>
+
+            <a href="{{ url_for('juridico_bp.export_excel', **filters) }}" class="btn btn-success btn-sm">
+                <i class="fas fa-file-excel me-1"></i>Exportar Excel
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        {% if propostas %}
+        <div class="table-container" style="max-height: 600px; overflow-y: auto;">
+            <table class="table table-bordered mb-0">
+                <thead style="position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <th style="min-width: 180px; background-color: #000; color: white;">Nº Processo</th>
+                        <th style="min-width: 150px; background-color: #000; color: white;">Operadora</th>
+                        <th style="min-width: 200px; background-color: #000; color: white;">Vara/Local Trâmite</th>
+                        <th style="min-width: 120px; background-color: #000; color: white;">Data Citação</th>
+                        <th style="min-width: 200px; background-color: #000; color: white;">Autor</th>
+                        <th style="min-width: 200px; background-color: #000; color: white;">Réu</th>
+                        <th style="min-width: 120px; background-color: #000; color: white;">Status</th>
+                        <th style="min-width: 130px; background-color: #000; color: white;">Valor da Causa</th>
+                        <th style="min-width: 130px; background-color: #000; color: white;">Risco Econômico</th>
+                        <th style="min-width: 100px; background-color: #000; color: white;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proposta in propostas %}
+                    <tr>
+                        <td class="fw-bold">{{ proposta.numero_processo or '-' }}</td>
+                        <td>{{ proposta.operadora_nome or '-'}}</td>
+                        <td>{{ proposta.vara_local or '-' }}</td>
+                        <td>{{ proposta.data_citacao.strftime('%d/%m/%Y') if proposta.data_citacao else '-' }}</td>
+                        <td>{{ proposta.autor or '-' }}</td>
+                        <td>{{ proposta.reu or '-' }}</td>
+                        <td>
+                            {% if proposta.status %}
+                                <span class="badge" style="background-color: #6c757d; color: white;">{{ proposta.status }}</span>
+                            {% else %}
+                                <span class="badge" style="background-color: #ffc107; color: black;">Sem Status</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-success fw-bold">
+                            {% if proposta.valor_da_causa %}R$ {{ "%.2f"|format(proposta.valor_da_causa) }}{% else %}-{% endif %}
+                        </td>
+                        <td class="text-danger fw-bold">
+                            {% if proposta.risco_economico %}R$ {{ "%.2f"|format(proposta.risco_economico) }}{% else %}-{% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('juridico_bp.edit_proposta', id=proposta.id) }}" 
+                                   class="btn btn-outline-primary" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" 
+                                    class="btn btn-outline-danger btn-delete"
+                                    data-proposta-id="{{ proposta.id }}"
+                                    data-proposta-numero="{{ proposta.numero_processo or proposta.id }}"
+                                    title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação -->
+        {% if pagination.pages > 1 %}
+        <nav class="d-flex justify-content-center mt-4 p-3">
+            <ul class="pagination">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('juridico_bp.propostas', page=1, per_page=per_page, **filters) }}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('juridico_bp.propostas', page=pagination.prev_num, per_page=per_page, **filters) }}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != pagination.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('juridico_bp.propostas', page=page_num, per_page=per_page, **filters) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('juridico_bp.propostas', page=pagination.next_num, per_page=per_page, **filters) }}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('juridico_bp.propostas', page=pagination.pages, per_page=per_page, **filters) }}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhum processo encontrado</h5>
+            <p class="text-muted">Faça o upload de uma planilha ou crie um novo processo.</p>
+            <a href="{{ url_for('juridico_bp.new_proposta') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-2"></i>Criar Primeiro Processo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function changePerPage(perPage) {
+    const url = new URL(window.location);
+    url.searchParams.set('per_page', perPage);
+    url.searchParams.set('page', '1');
+    window.location.href = url.toString();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Delete buttons
+    document.querySelectorAll(".btn-delete").forEach(button => {
+        button.addEventListener("click", function () {
+            const id = this.dataset.propostaId;
+            const numeroProposta = this.dataset.propostaNumero;
+
+            if (confirm(`Tem certeza que deseja excluir o processo ${numeroProposta}?`)) {
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "{{ url_for('juridico_bp.delete_proposta', id=0) }}".replace('0', id);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

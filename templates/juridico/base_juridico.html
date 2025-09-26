@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Jurídico{% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.css') }}">
+</head>
+<body class="d-flex flex-column min-vh-100"> 
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('juridico_bp.propostas') }}">
+                <img width="200" src="{{ url_for('static', filename='img/logo-branco.png') }}" alt="Quali Saúde" class="d-inline-block align-top">
+            </a>
+
+            {% if session.get("juridico_user") %}
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user me-1"></i>
+                    {{ session.get("juridico_nome_completo") or session.get("juridico_user") }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ url_for('juridico_bp.propostas') }}">
+                        <i class="fas fa-list me-2"></i>Propostas
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('juridico_bp.new_proposta') }}">
+                        <i class="fas fa-plus me-2"></i>Novo Registro
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('juridico_bp.perfil') }}">
+                        <i class="fas fa-user-edit me-2"></i>Meu Perfil
+                    </a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('juridico_bp.usuarios') }}">
+                        <i class="fas fa-users me-2"></i>Usuários
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('juridico_bp.visualizar_logs') }}">
+                        <i class="fas fa-history me-2"></i>Logs do Sistema
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="{{ url_for('juridico_bp.logout') }}">
+                        <i class="fas fa-sign-out-alt me-2"></i>Sair
+                    </a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Conteúdo principal -->
+    <main class="container mt-4 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white mt-auto py-4"> 
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Quali Saúde - Sistema Jurídico</h5>
+                    <p class="mb-0">Sistema de gestão de processos jurídicos</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">v2.1.0 &copy; Desenvolvido por: Luiz Felipe Silva</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/icons.js') }}"></script>
+
+    <!-- Script básico para auto-close de alerts -->
+    <script>
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

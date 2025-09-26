@@ -1,0 +1,160 @@
+{% extends base_template %}
+
+{% block title %}Logs de Acesso - Quali Saúde{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-sign-in-alt me-2"></i>Logs de Acesso</h2>
+    <div>
+        <a href="{{ url_for(request.blueprint + '.visualizar_logs', tipo='alteracoes') }}" class="btn btn-outline-primary">
+            <i class="fas fa-history me-2"></i>Ver Logs de Alterações
+        </a>
+    </div>
+</div>
+
+<div class="sys-card card mb-4">
+    <div class="sys-card card-header bg-primary text-white">
+        <h6><i class="fas fa-filter me-2"></i>Filtros</h6>
+    </div>
+    <div class="sys-card card-body">
+        <form method="GET" class="row g-3">
+            <input type="hidden" name="tipo" value="acessos">
+            
+            <div class="col-md-4">
+                <label for="usuario" class="form-label">Usuário</label>
+                <input type="text" class="form-control" id="usuario" name="usuario" 
+                       value="{{ request.args.get('usuario', '') }}" placeholder="Filtrar por usuário">
+            </div>
+            
+            <div class="col-md-4">
+                <label for="acao" class="form-label">Ação</label>
+                <input type="text" class="form-control" id="acao" name="acao" 
+                       value="{{ request.args.get('acao', '') }}" placeholder="Filtrar por ação">
+            </div>
+            
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-2"></i>Filtrar
+                </button>
+                <a href="{{ url_for(request.blueprint + '.visualizar_logs', tipo='acessos') }}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="sys-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h6><i class="fas fa-list me-2"></i>Histórico de Acessos</h6>
+            <small class="text-muted">
+                Mostrando {{ logs.per_page * (logs.page - 1) + 1 }} a 
+                {{ logs.per_page * (logs.page - 1) + logs.items|length }} de 
+                {{ logs.total }} registros
+            </small>
+        </div>
+    </div>
+    
+    <div class="sys-card card-body">
+        {% if logs.items %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Usuário</th>
+                        <th>IP</th>
+                        <th>Ação</th>
+                        <th>Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                        <td><span class="badge bg-info">{{ log.usuario }}</span></td>
+                        <td><span class="badge bg-secondary">{{ log.ip }}</span></td>
+                        <td>
+                            <span class="badge 
+                                {% if 'login' in log.acao.lower() %}bg-success
+                                {% elif 'logout' in log.acao.lower() %}bg-danger
+                                {% elif 'erro' in log.acao.lower() %}bg-warning text-dark
+                                {% else %}bg-primary{% endif %}">
+                                {{ log.acao }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if log.detalhes %}
+                            <span class="text-muted">{{ log.detalhes|truncate(80) }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginação -->
+        {% if logs.pages > 1 %}
+        <nav aria-label="Navegação de páginas">
+            <ul class="pagination justify-content-center">
+                {% if logs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for(request.blueprint + '.visualizar_logs', page=logs.prev_num, tipo='acessos', usuario=request.args.get('usuario'), acao=request.args.get('acao')) }}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                </li>
+                {% endif %}
+                
+                {% for page_num in logs.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
+                    {% if page_num %}
+                        {% if page_num != logs.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for(request.blueprint + '.visualizar_logs', page=page_num, tipo='acessos', usuario=request.args.get('usuario'), acao=request.args.get('acao')) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if logs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for(request.blueprint + '.visualizar_logs', page=logs.next_num, tipo='acessos', usuario=request.args.get('usuario'), acao=request.args.get('acao')) }}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Nenhum registro encontrado</h5>
+            <p class="text-muted">Tente ajustar os filtros ou não há acessos registrados.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

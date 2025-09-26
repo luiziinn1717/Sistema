@@ -1,0 +1,94 @@
+{% extends base_template %}
+
+{% block title %}Editar Usuário - Sistema de Propostas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="sys-card card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-user-edit me-2"></i>Editar Usuário: {{ usuario.username }}</h4>
+            </div>
+            <div class="sys-card card-body">
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Nome de Usuário</label>
+                                <input type="text" class="form-control" id="username" value="{{ usuario.username }}" disabled>
+                                <small class="form-text text-muted">Não pode ser alterado</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="nome_completo" class="form-label">Nome Completo *</label>
+                                <input type="text" class="form-control" id="nome_completo" name="nome_completo" 
+                                       value="{{ request.form.get('nome_completo', usuario.nome_completo) }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ request.form.get('email', usuario.email) }}" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cargo" class="form-label">Cargo</label>
+                                <input type="text" class="form-control" id="cargo" name="cargo" 
+                                       value="{{ request.form.get('cargo', usuario.cargo) }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="departamento" class="form-label">Departamento</label>
+                                <input type="text" class="form-control" id="departamento" name="departamento" 
+                                       value="{{ request.form.get('departamento', usuario.departamento) }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="telefone" class="form-label">Telefone</label>
+                                <input type="text" class="form-control" id="telefone" name="telefone" 
+                                       placeholder="(00) 00000-0000"
+                                       value="{{ request.form.get('telefone', usuario.telefone) }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="role_id" class="form-label">Papel *</label>
+                                <select class="form-select" id="role_id" name="role_id" required>
+                                    <option value="">Selecione um papel</option>
+                                    {% for role in roles %}
+                                        {% set selected = request.form.get('role_id', usuario.role_id)|int == role.id %}
+                                        <option value="{{ role.id }}" {% if selected %}selected{% endif %}>{{ role.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                        <a href="{{ url_for(request.blueprint + '.usuarios') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

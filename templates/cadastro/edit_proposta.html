@@ -1,0 +1,337 @@
+{% extends "base_cadastro.html" %}
+
+{% block title %}Editar Proposta - Sistema de Propostas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="sys-card card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-edit me-2"></i>Editar Proposta - {{ proposta.numero_proposta }}</h4>
+            </div>
+            <div class="sys-card card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <!-- Dados Importados (somente leitura) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-info mb-3"><i class="fas fa-database me-2"></i>Dados Importados da Planilha</h6>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Tipo de Contrato</label>
+                                        <input type="text" class="form-control" value="{{ proposta.tipo_contrato or '' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Número da Proposta</label>
+                                        <input type="text" class="form-control" value="{{ proposta.numero_proposta or '' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Operadora</label>
+                                        <input type="text" class="form-control" value="{{ proposta.operadora_nome or '' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Cliente/Contratante</label>
+                                        <input type="text" class="form-control" value="{{ proposta.cliente_contratante or '' }}" readonly>
+                                    </div>
+                                </div>
+                            <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="">Selecione...</option>
+                                    <option value="ANALISADA" {% if proposta.status == 'ANALISADA' %}selected{% endif %}>ANALISADA</option>
+                                    <option value="DECLINADO" {% if proposta.status == 'DECLINADO' %}selected{% endif %}>DECLINADO</option>
+                                    <option value="IMPLANTADO" {% if proposta.status == 'IMPLANTADO' %}selected{% endif %}>IMPLANTADO</option>
+                                    <option value="IMPORTADO OPERADORA" {% if proposta.status == 'IMPORTADO OPERADORA' %}selected{% endif %}>IMPORTADO OPERADORA</option>
+                                    <option value="PENDENTE ENTREVISTA" {% if proposta.status == 'PENDENTE ENTREVISTA' %}selected{% endif %}>PENDENTE ENTREVISTA</option>
+                                    <option value="PENDENTE COMERCIAL" {% if proposta.status == 'PENDENTE COMERCIAL' %}selected{% endif %}>PENDENTE COMERCIAL</option>
+                                    <option value="PENDENTE VENDEDOR/CLIENTE" {% if proposta.status == 'PENDENTE VENDEDOR/CLIENTE' %}selected{% endif %}>PENDENTE VENDEDOR/CLIENTE</option>
+                                    <option value="RASCUNHO" {% if proposta.status == 'RASCUNHO' %}selected{% endif %}>RASCUNHO</option>
+                                </select>
+                            </div>
+                            </div>
+                        </div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">Vidas</label>
+                                        <input type="text" class="form-control" value="{{ proposta.quantidade_vidas or '' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Vendedor</label>
+                                        <input type="text" class="form-control" value="{{ proposta.vendedor or '' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Corretora</label>
+                                        <input type="text" class="form-control" value="{{ proposta.corretora or '' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">Valor</label>
+                                        <input type="text" class="form-control" value="{% if proposta.valor %}R$ {{ '%.2f'|format(proposta.valor) }}{% endif %}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">Data Criação</label>
+                                        <input type="text" class="form-control" value="{% if proposta.data_criacao %}{{ proposta.data_criacao.strftime('%d/%m/%Y') }}{% endif %}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Campos Manuais -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-user-edit me-2"></i>Analise</h6>
+                        </div>
+                    </div>
+
+                    <!-- Análise e Status -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="data_analise" class="form-label">Data da Análise</label>
+                                <input type="date" class="form-control" id="data_analise" name="data_analise" 
+                                       value="{% if proposta.data_analise %}{{ proposta.data_analise.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="realizou_entrevista_medica" class="form-label">Entrevista Médica</label>
+                                <select class="form-control" id="realizou_entrevista_medica" name="realizou_entrevista_medica">
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim" {% if proposta.realizou_entrevista_medica == 'Sim' %}selected{% endif %}>Sim</option>
+                                    <option value="Não" {% if proposta.realizou_entrevista_medica == 'Não' %}selected{% endif %}>Não</option>
+                                    <option value="Não se aplica" {% if proposta.realizou_entrevista_medica == 'Não se aplica' %}selected{% endif %}>Não se aplica</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="status_area_medica" class="form-label">Status Área Médica</label>
+                                <select class="form-control" id="status_area_medica" name="status_area_medica"> 
+                                    <option value="">Selecione...</option>
+                                    <option value="Pendente" {% if proposta.status_area_medica == "Pendente" %}selected{% endif %}>Pendente</option>
+                                    <option value="Liberado" {% if proposta.status_area_medica == "Liberado" %}selected{% endif %}>Liberado</option>
+                                    <option value="Não se aplica" {% if proposta.status_area_medica == "Não se aplica" %}selected{% endif %}>Não se aplica</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="motivo_declinio" class="form-label">Motivo Declínio/Rascunho</label>
+                                <select class="form-control" id="motivo_declinio" name="motivo_declinio">
+                                    <option value="">Selecione...</option>
+                                    <option value="DEVOLUCAO ADM" {% if proposta.motivo_declino == "DEVOLUCAO ADM" %}selected{% endif %}>DEVOLUCAO ADM</option> 
+                                    <option value="DECLINIO TECNICO" {% if proposta.motivo_declinio == "DECLINIO TECNICO" %}selected{% endif %}>DECLINIO TECNICO</option> 
+                                    <option value="FALTA INTERAÇÃO" {% if proposta.motivo_declino == "FALTA INTERAÇÃO" %}selected{% endif %}>FALTA INTERAÇÃO</option> 
+                                    <option value="A PEDIDO DO COMERCIAL" {% if proposta.motivo_declino == "A PEDIDO DO COMERCIAL" %}selected{% endif %}>A PEDIDO DO COMERCIAL</option> 
+                                    <option value="PENDENCIA NAO SOLUCIONADA NO PRAZO" {% if proposta.motivo_declino == "PENDENCIA NAO SOLUCIONADA NO PRAZO" %}selected{% endif %}>PENDENCIA NAO SOLUCIONADA NO PRAZO</option>
+                                </select>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="observacao" class="form-label">Observação</label>
+                                <textarea class="form-control" id="observacao" name="observacao" rows="2">{{ proposta.observacao or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digitação e Cadastro -->
+                    <h6 class="text-success mb-3 mt-4"><i class="fas fa-keyboard me-2"></i>Digitação e Cadastro</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="responsavel_digitacao" class="form-label">Responsável pela Digitação</label>
+                                <input type="text" class="form-control" id="responsavel_digitacao" name="responsavel_digitacao" 
+                                       value="{{ proposta.responsavel_digitacao or '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_cadastro_facplan" class="form-label">Data Cadastro FACPLAN</label>
+                                <input type="date" class="form-control" id="data_cadastro_facplan" name="data_cadastro_facplan" 
+                                       value="{% if proposta.data_cadastro_facplan %}{{ proposta.data_cadastro_facplan.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="api_facplan" class="form-label">API FACPLAN</label>
+                                <select class="form-control" id="api_facplan" name="api_facplan">
+                                    <option value="">Selecione...</option>
+                                    <option value="DIGITAÇÃO MANUAL" {% if proposta.api_facplan == 'DIGITAÇÃO MANUAL' %}selected{% endif %}>DIGITAÇÃO MANUAL</option>
+                                    <option value="API ENVIOU PARA O FACPLAN" {% if proposta.api_facplan == 'API ENVIOU PARA O FACPLAN' %}selected{% endif %}>API ENVIOU PARA O FACPLAN</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_envio_operadora" class="form-label">Data Envio p/ Operadora</label>
+                                <input type="date" class="form-control" id="data_envio_operadora" name="data_envio_operadora" 
+                                       value="{% if proposta.data_envio_operadora %}{{ proposta.data_envio_operadora.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="digitacao_api" class="form-label">Digitação/API</label>
+                                <select class="form-control" id="digitacao_api" name="digitacao_api">
+                                    <option value="">Selecione...</option>
+                                    <option value="DIGITAÇÃO MANUAL" {% if proposta.digitacao_api == 'DIGITAÇÃO MANUAL' %}selected{% endif %}>DIGITAÇÃO MANUAL</option>
+                                    <option value="ENVIADO PELA API" {% if proposta.digitacao_api == 'ENVIADO PELA API' %}selected{% endif %}>ENVIADO PELA API</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="conferencia" class="form-label">Conferência</label>
+                                <select class="form-control" id="conferencia" name="conferencia">
+                                    <option value="">Selecione...</option>
+                                    <option value="CONFERIDO" {% if proposta.conferencia == 'CONFERIDO' %}selected{% endif %}>CONFERIDO</option>
+                                    <option value="INCONSISTÊNCIA" {% if proposta.conferencia == 'INCONSISTÊNCIA' %}selected{% endif %}>INCONSISTÊNCIA</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Efetivação -->
+                    <h6 class="text-warning mb-3 mt-4"><i class="fas fa-check-circle me-2"></i>Efetivação</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="responsavel_efetivacao" class="form-label">Responsável pela Efetivação</label>
+                                <input type="text" class="form-control" id="responsavel_efetivacao" name="responsavel_efetivacao" 
+                                       value="{{ proposta.responsavel_efetivacao or '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_efetivacao" class="form-label">Data Efetivação</label>
+                                <input type="date" class="form-control" id="data_efetivacao" name="data_efetivacao" 
+                                       value="{% if proposta.data_efetivacao %}{{ proposta.data_efetivacao.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="data_implantacao" class="form-label">Data da Implantação</label>
+                                <input type="date" class="form-control" id="data_implantacao" name="data_implantacao" 
+                                       value="{% if proposta.data_implantacao %}{{ proposta.data_implantacao.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Geração de Boleto -->
+                    <h6 class="text-info mb-3 mt-4"><i class="fas fa-file-invoice me-2"></i>Geração de Boleto</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="responsavel_geracao" class="form-label">Responsável pela Geração</label>
+                                <input type="text" class="form-control" id="responsavel_geracao" name="responsavel_geracao" 
+                                       value="{{ proposta.responsavel_geracao or '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="data_geracao_boleto" class="form-label">Data Geração do Boleto</label>
+                                <input type="date" class="form-control" id="data_geracao_boleto" name="data_geracao_boleto" 
+                                       value="{% if proposta.data_geracao_boleto %}{{ proposta.data_geracao_boleto.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Devolução -->
+                    <h6 class="text-danger mb-3 mt-4"><i class="fas fa-undo me-2"></i>Devolução</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="colaborador_devolucao" class="form-label">Colaborador Devolução</label>
+                                <input type="text" class="form-control" id="colaborador_devolucao" name="colaborador_devolucao" 
+                                       value="{{ proposta.colaborador_devolucao or '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="dt_critica_operadora" class="form-label">DT Crítica Operadora</label>
+                                <input type="date" class="form-control" id="dt_critica_operadora" name="dt_critica_operadora" 
+                                       value="{% if proposta.dt_critica_operadora %}{{ proposta.dt_critica_operadora.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="dt_resolvido_quali" class="form-label">DT Resolvido Quali</label>
+                                <input type="date" class="form-control" id="dt_resolvido_quali" name="dt_resolvido_quali" 
+                                       value="{% if proposta.dt_resolvido_quali %}{{ proposta.dt_resolvido_quali.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="origem_devolucao" class="form-label">Origem da Devolução</label>
+                                <input type="text" class="form-control" id="origem_devolucao" name="origem_devolucao" 
+                                       value="{{ proposta.origem_devolucao or '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="status_devolucao" class="form-label">Status Devolução</label>
+                                <input type="text" class="form-control" id="status_devolucao" name="status_devolucao" 
+                                       value="{{ proposta.status_devolucao or '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="motivo_devolucao" class="form-label">Motivo Devolução</label>
+                                <input type="text" class="form-control" id="motivo_devolucao" name="motivo_devolucao" 
+                                       value="{{ proposta.motivo_devolucao or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="descricao_devolucao" class="form-label">Descrição Devolução</label>
+                                <textarea class="form-control" id="descricao_devolucao" name="descricao_devolucao" rows="3">{{ proposta.descricao_devolucao or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('cadastro_bp.propostas') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

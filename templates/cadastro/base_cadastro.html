@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cadastro{% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.css') }}">
+</head>
+<body class="d-flex flex-column min-vh-100"> 
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+                <a class="navbar-brand" href="{{ url_for('cadastro_bp.propostas') }}">
+                    <img width="200px" src="{{ url_for('static', filename='img/logo-branco.png') }}" alt="Quali Saúde" class="me-3" style="height: 40px;">
+                </a>
+
+                <!-- Menu do usuário -->
+                {% if session.get("cadastro_user") %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user me-1"></i>
+                        {{ session.get("cadastro_nome_completo") or session.get("cadastro_user") }}
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('cadastro_bp.propostas') }}">
+                        <i class="fas fa-list me-2"></i>Propostas
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cadastro_bp.new_proposta') }}">
+                        <i class="fas fa-plus me-2"></i>Novo Registro
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cadastro_bp.upload') }}">
+                        <i class="fas fa-plus me-2"></i>Upload
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cadastro_bp.perfil') }}">
+                            <i class="fas fa-user-edit me-2"></i>Meu Perfil
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cadastro_bp.usuarios') }}">
+                            <i class="fas fa-users me-2"></i>Usuários
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('cadastro_bp.visualizar_logs') }}">
+                            <i class="fas fa-history me-2"></i>Logs do Sistema
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('cadastro_bp.logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Sair
+                        </a></li>
+                    </ul>
+                </div>
+                {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash messages -->
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-box alert-{{ 'danger' if category == 'error' else category }}">
+                        <span>{{ message }}</span>
+                        <button type="button" class="close-btn ms-3" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Conteúdo principal -->
+    <main class="container flex-grow-1 mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-white mt-auto py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Quali Saúde - Sistema Cadastro</h5>
+                    <p class="mb-0">Sistema de gestão de cadastros</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">v2.1.0 &copy; Desenvolvido por: Luiz Felipe Silva</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/icons.js') }}"></script>
+    <script>
+        // Toggle do menu de usuário
+        document.getElementById('user-menu-button')?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('user-menu');
+            menu.classList.toggle('show');
+        });
+
+        // Fechar menu ao clicar fora
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('user-menu');
+            const button = document.getElementById('user-menu-button');
+            if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        // Fechar menu com ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.getElementById('user-menu')?.classList.remove('show');
+            }
+        });
+
+        // Auto-close flash messages
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-box');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

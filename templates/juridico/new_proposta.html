@@ -1,0 +1,150 @@
+{% extends "base_juridico.html" %}
+
+{% block title %}Novo Processo - Sistema Jurídico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="sys-card card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Novo Processo</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Dados Básicos</h6>
+                            
+                            <div class="mb-3">
+                                <label for="operadora_nome" class="form-label fw-semibold">Operadora</label>
+                                <select class="form-select" id="operadora_nome" name="operadora_nome" required>
+                                    <option value="">Selecione uma operadora...</option>
+                                    <option value="Hapvida - Anatect" {% if proposta and proposta.operadora_nome == 'Hapvida - Anatect' %}selected{% endif %}>Hapvida - Anatect</option>
+                                    <option value="Hapvida - Asasevi" {% if proposta and proposta.operadora_nome == 'Hapvida - Asasevi' %}selected{% endif %}>Hapvida - Asasevi</option>
+                                    <option value="Nordeste Saúde" {% if proposta and proposta.operadora_nome == 'Nordeste Saúde' %}selected{% endif %}>Nordeste Saúde</option>
+                                    <option value="São Bernardo Samp" {% if proposta and proposta.operadora_nome == 'São Bernardo Samp' %}selected{% endif %}>São Bernardo Samp</option>
+                                    <option value="SB Saúde" {% if proposta and proposta.operadora_nome == 'SB Saúde' %}selected{% endif %}>SB Saúde</option>
+                                    <option value="You Saúde" {% if proposta and proposta.operadora_nome == 'You Saúde' %}selected{% endif %}>You Saúde</option>
+                                    <option value="Aurora Saúde" {% if proposta and proposta.operadora_nome == 'Aurora Saúde' %}selected{% endif %}>Aurora Saúde</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="numero_processo" class="form-label fw-semibold">Número do Processo</label>
+                                <input type="text" class="form-control" id="numero_processo" name="numero_processo" 
+                                       placeholder="Ex: 0000000-00.0000.0.00.0000" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="vara_local" class="form-label fw-semibold">Vara/Local Trâmite</label>
+                                <input type="text" class="form-control" id="vara_local" name="vara_local" 
+                                    required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="data_citacao" class="form-label fw-semibold">Data Citação</label>
+                                <input type="date" class="form-control" id="data_citacao" name="data_citacao" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-users me-2"></i>Partes Envolvidas</h6>
+
+                            <div class="mb-3">
+                                <label for="autor" class="form-label fw-semibold">Autor</label>
+                                <input type="text" class="form-control" id="autor" name="autor" 
+                                       placeholder="Nome do autor" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="reu" class="form-label fw-semibold">Réu</label>
+                                <input type="text" class="form-control" id="reu" name="reu" 
+                                       placeholder="Nome do réu" required>
+                            </div>
+
+                            <h6 class="text-primary mb-3 mt-4"><i class="fas fa-dollar-sign me-2"></i>Valores</h6>
+
+                            <div class="mb-3">
+                                <label for="valor_da_causa" class="form-label fw-semibold">Valor da Causa</label>
+                                <input type="text" class="form-control" id="valor_da_causa" name="valor_da_causa" 
+                                       placeholder="R$ 0,00" 
+                                       pattern="^\d{1,3}(?:\.\d{3})*,\d{2}$" 
+                                       title="Por favor, insira um valor monetário no formato R$ 1.234,56">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-file-alt me-2"></i>Informações Adicionais</h6>
+                            <div class="mb-3">
+                                <label for="observacoes" class="form-label fw-semibold"></label>
+                                <textarea class="form-control" id="observacoes" name="observacoes" 
+                                          rows="4" placeholder="Adicione observações relevantes sobre o processo..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('juridico_bp.propostas') }}" class="btn btn-secondary me-2">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar para Lista
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar Processo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Máscara para valores monetários
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para formatar valores monetários
+    function formatarMoeda(input) {
+        let valor = input.value.replace(/\D/g, '');
+        valor = (Number(valor) / 100).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        input.value = valor === '0,00' ? '' : 'R$ ' + valor;
+    }
+
+    // Aplicar máscara aos campos de valor
+    const valorCausa = document.getElementById('valor_da_causa');
+    const riscoEconomico = document.getElementById('risco_economico');
+
+    if (valorCausa) {
+        valorCausa.addEventListener('blur', function() {
+            formatarMoeda(this);
+        });
+        
+        valorCausa.addEventListener('focus', function() {
+            this.value = this.value.replace('R$ ', '');
+        });
+    }
+
+    if (riscoEconomico) {
+        riscoEconomico.addEventListener('blur', function() {
+            formatarMoeda(this);
+        });
+        
+        riscoEconomico.addEventListener('focus', function() {
+            this.value = this.value.replace('R$ ', '');
+        });
+    }
+
+    // Preencher data atual se não estiver preenchida
+    const dataCitacao = document.getElementById('data_citacao');
+    if (dataCitacao && !dataCitacao.value) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataCitacao.value = hoje;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,266 @@
+{% extends "base_juridico.html" %}
+
+{% block title %}Editar Processo - Sistema Jurídico{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="sys-card card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit me-2" > </i>Editar Processo - {{ proposta.numero_processo }}</h4>
+            </div>
+            <div class="sys-card card-body">
+                <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <!-- Dados Importados (somente leitura) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-info mb-3"><i class="fas fa-database me-2"></i>Dados do Processo</h6>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Operadora</label>
+                                        <input type="text" class="form-control" value="{{ proposta.operadora_nome or '-' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Número do Processo</label>
+                                        <input type="text" class="form-control" value="{{ proposta.numero_processo or '-' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Vara/Local Trâmite</label>
+                                        <input type="text" class="form-control" value="{{ proposta.vara_local or '-' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Data Citação</label>
+                                        <input type="text" class="form-control" value="{% if proposta.data_citacao %}{{ proposta.data_citacao.strftime('%d/%m/%Y') }}{% else %}-{% endif %}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Autor</label>
+                                        <input type="text" class="form-control" value="{{ proposta.autor or '-' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Réu</label>
+                                        <input type="text" class="form-control" value="{{ proposta.reu or '-' }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Valor da Causa</label>
+                                        <input type="text" class="form-control" value="{% if proposta.valor_da_causa %}R$ {{ '%.2f'|format(proposta.valor_da_causa) }}{% else %}-{% endif %}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="status" class="form-label fw-semibold">Status</label>
+                                        <select class="form-select" id="status" name="status">
+                                            <option value="">Selecione o status...</option>
+                                            <option value="EM ANDAMENTO" {% if proposta.status == 'EM ANDAMENTO' %}selected{% endif %}>EM ANDAMENTO</option>
+                                            <option value="FINALIZADO" {% if proposta.status == 'FINALIZADO' %}selected{% endif %}>FINALIZADO</option>
+                                            <option value="ARQUIVADO" {% if proposta.status == 'ARQUIVADO' %}selected{% endif %}>ARQUIVADO</option>
+                                            <option value="SUSPENSO" {% if proposta.status == 'SUSPENSO' %}selected{% endif %}>SUSPENSO</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Campos Manuais -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-user-edit me-2"></i>Andamento do Processo</h6>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="tipo_de_demandas" class="form-label fw-semibold">Tipo de Demanda</label>
+                                <select class="form-select" id="tipo_de_demandas" name="tipo_de_demandas">
+                                    <option value="">Selecione o tipo...</option>
+                                    <option value="Demandas assistências" {% if proposta.tipo_de_demandas == 'Demandas assistências' %}selected{% endif %}>Demandas assistências</option>
+                                    <option value="Cobrança e Negativação indevida" {% if proposta.tipo_de_demandas == 'Cobrança e Negativação indevida' %}selected{% endif %}>Cobrança e Negativação indevida</option>
+                                    <option value="Coparticipação" {% if proposta.tipo_de_demandas == 'Coparticipação' %}selected{% endif %}>Coparticipação</option>
+                                    <option value="Coparticipação TEA" {% if proposta.tipo_de_demandas == 'Coparticipação TEA' %}selected{% endif %}>Coparticipação TEA</option>
+                                    <option value="Cancelamento indevido" {% if proposta.tipo_de_demandas == 'Cancelamento indevido' %}selected{% endif %}>Cancelamento indevido</option>
+                                    <option value="Reajuste" {% if proposta.tipo_de_demandas == 'Reajuste' %}selected{% endif %}>Reajuste</option>
+                                    <option value="Migração Asasevi" {% if proposta.tipo_de_demandas == 'Migração Asasevi' %}selected{% endif %}>Migração Asasevi</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="grupo_de_causas" class="form-label fw-semibold">Grupo de Causas</label>
+                                <select class="form-select" id="grupo_de_causas" name="grupo_de_causas">
+                                    <option value="">Selecione o grupo...</option>
+                                    <option value="Todas demandas que envolvem a responsabilidade da operadora no quesito assistencial (prestação de atendimento)" {% if proposta.grupo_de_causas == 'Todas demandas que envolvem a responsabilidade da operadora no quesito assistencial (prestação de atendimento)' %}selected{% endif %}>Responsabilidade assistencial</option>
+                                    <option value="Insatisfação com Rede" {% if proposta.grupo_de_causas == 'Insatisfação com Rede' %}selected{% endif %}>Insatisfação com Rede</option>
+                                    <option value="Cobranças indevidas tanto da Quali, quanto das prestadoras de serviços" {% if proposta.grupo_de_causas == 'Cobranças indevidas tanto da Quali, quanto das prestadoras de serviços' %}selected{% endif %}>Cobranças indevidas</option>
+                                    <option value="Coparticipação em geral que não envolva TEA." {% if proposta.grupo_de_causas == 'Coparticipação em geral que não envolva TEA.' %}selected{% endif %}>Coparticipação geral</option>
+                                    <option value="Especificamente terapia aba autismo" {% if proposta.grupo_de_causas == 'Especificamente terapia aba autismo' %}selected{% endif %}>Terapia ABA autismo</option>
+                                    <option value="Cancelamento indevido" {% if proposta.grupo_de_causas == 'Cancelamento indevido' %}selected{% endif %}>Cancelamento indevido</option>
+                                    <option value="Reajustes abusivos" {% if proposta.grupo_de_causas == 'Reajustes abusivos' %}selected{% endif %}>Reajustes abusivos</option>
+                                    <option value="Demandas oriundas da migração" {% if proposta.grupo_de_causas == 'Demandas oriundas da migração' %}selected{% endif %}>Demandas da migração</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="liminar_deferida" class="form-label fw-semibold">Liminar Deferida</label>
+                                <select class="form-select" id="liminar_deferida" name="liminar_deferida">
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim" {% if proposta.liminar_deferida == 'Sim' %}selected{% endif %}>Sim</option>
+                                    <option value="Não" {% if proposta.liminar_deferida == 'Não' %}selected{% endif %}>Não</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="causa_padronizado" class="form-label fw-semibold">Causa Padronizado</label>
+                                <input type="text" class="form-control" id="causa_padronizado" name="causa_padronizado" 
+                                       value="{{ proposta.causa_padronizado or '' }}" placeholder="Descreva a causa padronizada">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="resumo_do_objeto" class="form-label fw-semibold">Resumo do Objeto</label>
+                                <input type="text" class="form-control" id="resumo_do_objeto" name="resumo_do_objeto" 
+                                       value="{{ proposta.resumo_do_objeto or '' }}" placeholder="Resumo do objeto do processo">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="ultimo_andamento" class="form-label fw-semibold">Último Andamento</label>
+                                <input type="text" class="form-control" id="ultimo_andamento" name="ultimo_andamento" 
+                                       value="{{ proposta.ultimo_andamento or '' }}" placeholder="Descreva o último andamento do processo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Avaliação e Valores -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-chart-bar me-2"></i>Avaliação e Valores</h6>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="avaliacao_de_risco" class="form-label fw-semibold">Avaliação do Risco</label>
+                                <select class="form-select" id="avaliacao_de_risco" name="avaliacao_de_risco"> 
+                                    <option value="">Selecione...</option>
+                                    <option value="Provável" {% if proposta.avaliacao_do_risco == "Provável" %}selected{% endif %}>Provável</option>
+                                    <option value="Possível" {% if proposta.avaliacao_do_risco == "Possível" %}selected{% endif %}>Possível</option>
+                                    <option value="Remota" {% if proposta.avaliacao_do_risco == "Remota" %}selected{% endif %}>Remota</option>
+                                    <option value="Inexistente" {% if proposta.avaliacao_do_risco == "Inexistente" %}selected{% endif %}>Inexistente</option>
+                                    <option value="Arquivado" {% if proposta.avaliacao_do_risco == "Arquivado" %}selected{% endif %}>Arquivado</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="risco_economico" class="form-label fw-semibold">Risco Econômico</label>
+                                <input type="text" class="form-control" id="risco_economico" name="risco_economico" 
+                                       placeholder="R$ 0,00" 
+                                       value="{% if proposta.risco_economico %}R$ {{ '%.2f'|format(proposta.risco_economico) }}{% endif %}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="valor_de_condenacao" class="form-label fw-semibold">Valor de Condenação</label>
+                                <input type="text" class="form-control" id="valor_de_condenacao" name="valor_de_condenacao" 
+                                       placeholder="R$ 0,00" 
+                                       value="{% if proposta.valor_de_condenacao %}R$ {{ '%.2f'|format(proposta.valor_de_condenacao) }}{% endif %}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="data_de_pagamento" class="form-label fw-semibold">Data de Pagamento</label>
+                                <input type="date" class="form-control" id="data_de_pagamento" name="data_de_pagamento" 
+                                       value="{% if proposta.data_de_pagamento %}{{ proposta.data_de_pagamento.strftime('%Y-%m-%d') }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3"><i class="fas fa-sticky-note me-2"></i>Observações</h6>
+                            <div class="mb-3">
+                                <label for="observacao" class="form-label fw-semibold"></label>
+                                <textarea class="form-control" id="observacao" name="observacao" rows="4" 
+                                          placeholder="Adicione observações relevantes sobre o andamento do processo...">{{ proposta.observacao or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('juridico_bp.propostas') }}" class="btn btn-secondary me-2">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar para Lista
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para valores monetários
+    function formatarMoeda(input) {
+        let valor = input.value.replace(/\D/g, '');
+        valor = (Number(valor) / 100).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        input.value = valor === '0,00' ? '' : 'R$ ' + valor;
+    }
+
+    // Aplicar máscara aos campos de valor
+    const riscoEconomico = document.getElementById('risco_economico');
+    const valorCondenacao = document.getElementById('valor_de_condenacao');
+
+    if (riscoEconomico) {
+        riscoEconomico.addEventListener('blur', function() {
+            formatarMoeda(this);
+        });
+        
+        riscoEconomico.addEventListener('focus', function() {
+            this.value = this.value.replace('R$ ', '');
+        });
+    }
+
+    if (valorCondenacao) {
+        valorCondenacao.addEventListener('blur', function() {
+            formatarMoeda(this);
+        });
+        
+        valorCondenacao.addEventListener('focus', function() {
+            this.value = this.value.replace('R$ ', '');
+        });
+    }
+});
+</script>
+{% endblock %}
